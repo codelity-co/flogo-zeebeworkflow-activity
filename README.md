@@ -18,23 +18,25 @@ flogo install github.com/codelity-co/flogo-zeebeworkflow-activity
 ## Configuration
 
 ### Settings:
-  | Name                | Type   | Description
-  | :---                | :---   | :---
-  | zeebeBrokerHost     | string | Zeebe broker host - ***REQUIRED***
-  | zeebeBrokerPort     | int    | Zeebe broker port, default 26500 - ***REQUIRED***
-  | bpmnProcessID       | string | BPMN process ID - ***REQUIRED***
-  | command             | string | Zeebe command, Create or Cancel - ***REQUIRED***
+  | Name                   | Type       | Description
+  | :---                   | :---       | :---
+  | zeebeBrokerHost        | string     | Zeebe broker host - ***REQUIRED***
+  | zeebeBrokerPort        | int        | Zeebe broker port, default 26500 - ***REQUIRED***
+  | bpmnProcessID          | string     | BPMN process ID - ***REQUIRED***
+  | command                | string     | Zeebe command, Create or Cancel - ***REQUIRED***
+  | usePlainTextConnection | boolean | use SSL/TLS connection or not 
+  | caCertificatePath      | string  | certificate path
 
 ### Input
-  | Name                | Type   | Description
-  | :---                | :---   | :---
-  | data                | object | data object - ***REQUIRED***
+  | Name                   | Type   | Description
+  | :---                   | :---   | :---
+  | data                   | object | data object - ***REQUIRED***
 
 ### Output:
-  | Name          | Type   | Description
-  | :---          | :---   | :---
-  | status        | string | status text, ERROR or SUCCESS - ***REQUIRED***
-  | result        | any    | activity result
+  | Name                   | Type   | Description
+  | :---                   | :---   | :---
+  | status                 | string | status text, ERROR or SUCCESS - ***REQUIRED***
+  | result                 | any    | activity result
 
 ## Example
 

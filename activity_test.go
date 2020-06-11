@@ -52,6 +52,9 @@ func (suite *ZeebeworkflowActivityTestSuite) BeforeTest(suiteName, testName stri
 			panic(err)
 		}
 		response, err := zeebeClient.NewDeployWorkflowCommand().AddResourceFile("./test/order-process.bpmn").Send(context.Background())
+		if err != nil {
+			panic(err)
+		}
 		fmt.Println(fmt.Sprintf("response text: %v", response.String()))
 	}
 
@@ -83,6 +86,7 @@ func (suite *ZeebeworkflowActivityTestSuite) TestZeebeworkflowActivity_CreateWor
 		ZeebeBrokerPort: 26500,
 		BpmnProcessID:   "order-process",
 		Command:         "Create",
+		UsePlainTextConnection: true,
 	}
 
 	iCtx := test.NewActivityInitContext(settings, nil)
