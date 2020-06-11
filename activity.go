@@ -36,7 +36,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 	// Connect to Zeebe broker
 	zeebeClient, err = zbc.NewClient(&zbc.ClientConfig{
 		GatewayAddress:         fmt.Sprintf("%v:%v", s.ZeebeBrokerHost, s.ZeebeBrokerPort),
-		UsePlaintextConnection: true,
+		UsePlaintextConnection: s.UsePlainTextConnection,
 	})
 	if err != nil {
 		logger.Errorf("Zeebe broker connection error: %v", err)

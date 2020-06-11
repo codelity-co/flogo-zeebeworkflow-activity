@@ -10,6 +10,8 @@ type (
 		ZeebeBrokerPort int    `md:"zeebeBrokerPort,required"`
 		BpmnProcessID   string `md:"bpmnProcessID,required"`
 		Command         string `md:"command,required"`
+		UsePlainTextConnection bool `md:"usePlainTextConnection"`
+		CaCertificatePath string `md:"caCertificatePath"`
 	}
 
 	// Input struct
@@ -32,6 +34,9 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 		zeebeBrokerPort int
 		bpmnProcessID   string
 		command         string
+		usePlainTextConnection bool
+		caCertificatePath string
+		
 	)
 
 	zeebeBrokerHost, err = coerce.ToString(values["zeebeBrokerHost"])
@@ -58,15 +63,30 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 	}
 	s.Command = command
 
+	usePlainTextConnection, err = coerce.ToBool(values["usePlainTextConnection"])
+	if err != nil {
+		return err
+	}
+	s.UsePlainTextConnection = usePlainTextConnection
+
+	caCertificatePath, err = coerce.ToString(values["caCertificatePath"])
+	if err != nil {
+		return err
+	}
+	s.CaCertificatePath = caCertificatePath
+
 	return nil
 }
 
+// ToMap method of Settings
 func (s *Settings) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"zeebeBrokerHost": s.ZeebeBrokerHost,
 		"zeebeBrokerPort": s.ZeebeBrokerPort,
 		"bpmnProcessID":   s.BpmnProcessID,
 		"command":         s.Command,
+		"usePlainTextConnection": s.UsePlainTextConnection,
+		"caCertificatePath": s.CaCertificatePath,
 	}
 }
 
