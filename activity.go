@@ -84,7 +84,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	result := make(map[string]interface{})
 
 	switch a.activitySettings.Command {
-	case "Create":
+	case "CreateWorkflowInstance":
 		result["createWorkflowInstanceResponse"], err = a.createWorkflowInstance(ctx, input.Data)
 		if err != nil {
 			output.Status = "ERROR"
@@ -92,8 +92,16 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 			_ = ctx.SetOutputObject(output)
 			return true, err
 		}
-	case "Cancel":
+	case "CancelWorkflowInstance":
 		result["cancelWorkflowInstanceResponse"], err = a.cancelWorkflowInstance(ctx, input.Data)
+		if err != nil {
+			output.Status = "ERROR"
+			output.Result = err.Error()
+			_ = ctx.SetOutputObject(output)
+			return true, err
+		}
+	case "PublishMessage":
+		result["publishMessageResponse"], err = a.publishMessage(ctx, input.Data)
 		if err != nil {
 			output.Status = "ERROR"
 			output.Result = err.Error()
@@ -202,5 +210,56 @@ func (a *Activity) cancelWorkflowInstance(ctx activity.Context, input map[string
 	}
 
 	ctx.Logger().Debug("Finished createWorkflowInstance func successfully")
+	return response.String(), nil
+}
+
+
+func (a *Activity) publishMessage(ctx activity.Context, input map[string]interface{}) (string, error) {
+	var (
+		err error
+		messageName string
+		messageCorrelationKey string
+		messageData map[string]interface{}
+		response    *pb.PublishMessageResponse
+	)
+
+	ctx.Logger().Debug("Running cancelWorkflowInstance func...")
+	ctx.Logger().Debugf("input: %v", input)
+
+	ctx.Logger().Debug("Extracting messageName")
+	messageName, err = coerce.ToString(input["messageName"])
+	if err != nil {
+		ctx.Logger().Errorf("Get messageName error: %v", err)
+		return "", err
+	}
+
+	ctx.Logger().Debug("Extracting messageCorrelationKey")
+	messageCorrelationKey, err = coerce.ToString(input["messageCorrelationKey"])
+	if err != nil {
+		ctx.Logger().Errorf("Get messageCorrelationKey error: %v", err)
+		return "", err
+	}
+
+	if _, exists := input["data"]; exists {
+		ctx.Logger().Debug("Extracting messageCorrelationKey")
+		messageData, err = coerce.ToObject(input["data"])
+		if err != nil {
+			ctx.Logger().Errorf("Get data error: %v", err)
+			return "", err
+		}
+	}
+
+	step3 := a.zeebeClient.NewPublishMessageCommand().MessageName(messageName).CorrelationKey(messageCorrelationKey)
+	if messageData != nil {
+		step3, err = step3.VariablesFromMap(messageData)
+		if err != nil {
+			return "", err
+		}
+	} 
+	response, err = step3.Send(context.Background())
+	if err != nil {
+		return "", err
+	}
+	
 	return response.String(), nil
 }

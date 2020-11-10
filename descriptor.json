@@ -25,7 +25,7 @@
       "name": "command",
       "type": "string",
       "required": true,
-      "allowed": ["Create", "Cancel"]
+      "allowed": ["CreateWorkflowInstance", "CancelWorkflowInstance", "PublishMessage"]
     }
   ],
   "input": [
@@ -33,6 +33,16 @@
       "name": "data",
       "type": "object",
       "required": true
+    },
+    {
+      "name": "messageName",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "messageCorrelationKey",
+      "type": "string",
+      "required": false
     }
   ],
   "output": [
