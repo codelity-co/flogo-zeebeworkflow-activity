@@ -16,6 +16,8 @@ type (
 
 	// Input struct
 	Input struct {
+		MessageName string `md:"messageName,required"`
+		MessageCorrelationKey string `md:"messageCorrelationKey,required"`
 		Data map[string]interface{} `md:"data,required"`
 	}
 
@@ -94,15 +96,32 @@ func (s *Settings) ToMap() map[string]interface{} {
 func (i *Input) FromMap(values map[string]interface{}) error {
 	var (
 		err   error
+		messageName string
+		messageCorrelationKey string
 		data map[string]interface{}
 	)
+
+	messageName, err = coerce.ToString(values["messageName"])
+	if err != nil {
+		return err
+	}
+
+	messageCorrelationKey, err = coerce.ToString(values["messageCorrelationKey"])
+	if err != nil {
+		return err
+	}
 
 	data, err = coerce.ToObject(values["data"])
 	if err != nil {
 		return err
 	}
 
-	i.Data = data
+	i.MessageName = messageName
+	i.MessageCorrelationKey = messageCorrelationKey
+	if data != nil {
+		i.Data = data
+	}
+
 	return nil
 }
 
