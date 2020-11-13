@@ -8,4 +8,5 @@ require (
 	github.com/project-flogo/core v1.0.0
 	github.com/stretchr/testify v1.6.1
 	github.com/zeebe-io/zeebe/clients/go v0.0.0-20200605123146-e71ffa826422
+	google.golang.org/grpc v1.29.1
 )

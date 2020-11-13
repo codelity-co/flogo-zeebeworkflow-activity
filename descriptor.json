@@ -26,14 +26,20 @@
       "type": "string",
       "required": true,
       "allowed": ["CreateWorkflowInstance", "CancelWorkflowInstance", "PublishMessage"]
+    },
+    {
+      "name": "messageName",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "usePlainTextConnection",
+      "type": "boolean",
+      "required": true,
+      "default": true
     }
   ],
   "input": [
-    {
-      "name": "data",
-      "type": "object",
-      "required": true
-    },
     {
       "name": "messageName",
       "type": "string",
@@ -43,6 +49,11 @@
       "name": "messageCorrelationKey",
       "type": "string",
       "required": false
+    },
+    {
+      "name": "data",
+      "type": "object",
+      "required": true
     }
   ],
   "output": [
