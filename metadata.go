@@ -10,8 +10,8 @@ type Settings struct {
 	BpmnProcessID   string `md:"bpmnProcessID,required"`
 	Command         string `md:"command,required"`
 	UsePlainTextConnection bool `md:"usePlainTextConnection"`
-	JobType string `md:"jobType"`
-	MaxJobsToActiviate int32 `md:"maxJobsToActiviate"`
+
+	FailJobRetries  int32 `md:"failJobRetries"`
 }
 
 // FromMap method of Settings
@@ -23,6 +23,7 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 		bpmnProcessID   string
 		command         string
 		usePlainTextConnection bool
+		failJobRetries int32
 	)
 
 	zeebeBrokerHost, err = coerce.ToString(values["zeebeBrokerHost"])
@@ -55,6 +56,12 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 	}
 	s.UsePlainTextConnection = usePlainTextConnection
 
+	failJobRetries, err = coerce.ToInt32(values["failJobRetries"])
+	if err != nil {
+		return err
+	}
+	s.FailJobRetries = failJobRetries
+
 	return nil
 }
 
@@ -66,14 +73,18 @@ func (s *Settings) ToMap() map[string]interface{} {
 		"bpmnProcessID":   s.BpmnProcessID,
 		"command":         s.Command,
 		"usePlainTextConnection": s.UsePlainTextConnection,
+		"failJobRetries": s.FailJobRetries,
 	}
 }
 
 // Input struct
 type Input struct {
+	WorkflowInstanceKey int64 `md:"workflowInstanceKey"`
 	MessageName string `md:"messageName"`
 	MessageCorrelationKey string `md:"messageCorrelationKey"`
-	JobKey string `md:"jobKey"`
+	MessageTtlToLive string `md:"messageTtlToLive"`
+	IncidentKey int64 `md:"incidentKey"`
+	JobKey int64 `md:"jobKey"`
 	Data map[string]interface{} `md:"data"`
 }
 
@@ -81,10 +92,19 @@ type Input struct {
 func (i *Input) FromMap(values map[string]interface{}) error {
 	var (
 		err   error
+		workflowInstanceKey int64
 		messageName string
 		messageCorrelationKey string
+		messageTtlToLive string
+		incidentKey int64
+		jobKey int64
 		data map[string]interface{}
 	)
+
+	workflowInstanceKey, err = coerce.ToInt64(values["workflowInstanceKey"])
+	if err != nil {
+		return err
+	}
 
 	messageName, err = coerce.ToString(values["messageName"])
 	if err != nil {
@@ -96,13 +116,44 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
+	messageTtlToLive, err = coerce.ToString(values["messageTtlToLive"])
+	if err != nil {
+		return err
+	}
+
+	incidentKey, err = coerce.ToInt64(values["incidentKey"])
+	if err != nil {
+		return err
+	}
+
+	jobKey, err = coerce.ToInt64(values["jobKey"])
+	if err != nil {
+		return err
+	}
+
 	data, err = coerce.ToObject(values["data"])
 	if err != nil {
 		return err
 	}
 
-	i.MessageName = messageName
-	i.MessageCorrelationKey = messageCorrelationKey
+	if workflowInstanceKey > 0 {
+		i.WorkflowInstanceKey = workflowInstanceKey
+	}
+	if messageName != "" {
+		i.MessageName = messageName
+	}
+	if messageCorrelationKey != "" {
+		i.MessageCorrelationKey = messageCorrelationKey
+	}
+	if messageTtlToLive != "" {
+		i.MessageTtlToLive = messageTtlToLive
+	}
+	if incidentKey > 0 {
+		i.IncidentKey = incidentKey
+	}
+	if jobKey > 0 {
+		i.JobKey = jobKey
+	}
 	if data != nil {
 		i.Data = data
 	}
@@ -112,11 +163,29 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 
 // ToMap method of Input
 func (i *Input) ToMap() map[string]interface{} {
-	return map[string]interface{}{
-		"messageName": i.MessageName,
-		"messageCorrelationKey": i.MessageCorrelationKey,
-		"data": i.Data,
+	result := make(map[string]interface{})
+	if i.WorkflowInstanceKey > 0 {
+		result["workflowInstanceKey"] = i.WorkflowInstanceKey
 	}
+	if i.MessageName != "" {
+		result["messageName"] = i.MessageName
+	}
+	if i.MessageCorrelationKey != "" {
+		result["messageCorrelationKey"] = i.MessageCorrelationKey
+	}
+	if i.MessageTtlToLive != "" {
+		result["messageTtlToLive"] = i.MessageTtlToLive
+	}
+	if i.IncidentKey > 0 {
+		result["incidentKey"] = i.IncidentKey
+	}
+	if i.JobKey > 0 {
+		result["jobKey"] = i.JobKey
+	}
+	if i.Data != nil {
+		result["data"] = i.Data
+	}
+	return result 
 }
 
 // Output struct

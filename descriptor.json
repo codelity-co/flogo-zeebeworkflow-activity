@@ -25,21 +25,27 @@
       "name": "command",
       "type": "string",
       "required": true,
-      "allowed": ["CreateWorkflowInstance", "CancelWorkflowInstance", "PublishMessage"]
-    },
-    {
-      "name": "messageName",
-      "type": "string",
-      "required": false
+      "allowed": ["CreateWorkflowInstance", "CancelWorkflowInstance", "PublishMessage", "ResolveIncident", "CompleteJob", "FailJob"]
     },
     {
       "name": "usePlainTextConnection",
       "type": "boolean",
       "required": true,
       "default": true
+    },
+    {
+      "name": "failJobRetries",
+      "type": "integer",
+      "required": false,
+      "default": 5
     }
   ],
   "input": [
+    {
+      "name": "workflowInstanceKey",
+      "type": "integer",
+      "required": false
+    },
     {
       "name": "messageName",
       "type": "string",
@@ -51,10 +57,26 @@
       "required": false
     },
     {
+      "name": "messageTtlToLive",
+      "type": "string",
+      "required": false
+    },
+    {
+      "name": "incidentKey",
+      "type": "integer",
+      "required": false
+    },
+    {
+      "name": "jobKey",
+      "type": "integer",
+      "required": false
+    },
+    {
       "name": "data",
       "type": "object",
       "required": true
     }
+
   ],
   "output": [
     {

@@ -2,8 +2,9 @@ package zeebeworkflow
 
 import (
 	"context"
-	"fmt"
 	"errors"
+	"fmt"
+	"time"
 
 	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/codes"
@@ -194,7 +195,6 @@ func (a *Activity) createWorkflowInstance(ctx activity.Context, input map[string
 		bpmnProcessID string
 		data map[string]interface{}
 		request  commands.CreateInstanceCommandStep3
-		response *pb.CreateWorkflowInstanceResponse
 	)
 
 	ctx.Logger().Debug("Running createWorkflowInstance func...")
@@ -225,7 +225,7 @@ func (a *Activity) createWorkflowInstance(ctx activity.Context, input map[string
 		request = a.zeebeClient.NewCreateInstanceCommand().BPMNProcessId(bpmnProcessID).LatestVersion()
 	}
 
-	response, err = request.Send(context.Background())
+	response, err := request.Send(context.Background())
 	if err != nil {
 		ctx.Logger().Errorf("Failed to send create workflow instance request: %v", err)
 		return nil, err
@@ -237,6 +237,7 @@ func (a *Activity) createWorkflowInstance(ctx activity.Context, input map[string
 		"version":             response.GetVersion(),
 		"workflowKey":         response.GetWorkflowKey(),
 		"workflowInstanceKey": response.GetWorkflowInstanceKey(),
+		"createWorkflowInstanceStatus": true,
 	}
 
 	ctx.Logger().Debug("Finished createWorkflowInstance func successfully")
@@ -247,8 +248,6 @@ func (a *Activity) cancelWorkflowInstance(ctx activity.Context, input map[string
 	var (
 		err                 error
 		workflowInstanceKey int64
-		request             commands.DispatchCancelWorkflowInstanceCommand
-		response            *pb.CancelWorkflowInstanceResponse
 	)
 
 	ctx.Logger().Debug("Running cancelWorkflowInstance func...")
@@ -262,9 +261,10 @@ func (a *Activity) cancelWorkflowInstance(ctx activity.Context, input map[string
 	}
 
 	ctx.Logger().Debug("Creating request")
-	request = a.zeebeClient.NewCancelInstanceCommand().WorkflowInstanceKey(workflowInstanceKey)
+	request := a.zeebeClient.NewCancelInstanceCommand().WorkflowInstanceKey(workflowInstanceKey)
+
 	ctx.Logger().Debug("Sending request")
-	response, err = request.Send(context.Background())
+	_, err = request.Send(context.Background())
 	if err != nil {
 		ctx.Logger().Errorf("Failed to send cancel workflow instance request: %v", err)
 		return nil, err
@@ -273,23 +273,22 @@ func (a *Activity) cancelWorkflowInstance(ctx activity.Context, input map[string
 	result := map[string]interface{}{
 		"workflowInstanceKey": workflowInstanceKey,
 		"cancelWorkflowInstanceStatus": true,
-		"cancelWorkflowInstanceResponseText": response.String(),
 	}
+
 	ctx.Logger().Debug("Finished createWorkflowInstance func successfully")
 	return result, nil
 }
-
 
 func (a *Activity) publishMessage(ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
 	var (
 		err error
 		messageName string
 		messageCorrelationKey string
+		messageTtlToLive time.Duration
 		messageData map[string]interface{}
-		response    *pb.PublishMessageResponse
 	)
 
-	ctx.Logger().Debug("Running cancelWorkflowInstance func...")
+	ctx.Logger().Debug("Running publish message func...")
 	ctx.Logger().Debugf("input: %v", input)
 
 	ctx.Logger().Debug("Extracting messageName")
@@ -306,8 +305,20 @@ func (a *Activity) publishMessage(ctx activity.Context, input map[string]interfa
 		return nil, err
 	}
 
+	ctx.Logger().Debug("Extracting ttlToLiveDuration")
+	durationString, err := coerce.ToString(input["messageTtlToLive"])
+	if err != nil {
+		ctx.Logger().Errorf("Get ttlToLiveDuration error: %v", err)
+		return nil, err
+	}
+	messageTtlToLive, err = time.ParseDuration(durationString)
+	if err != nil {
+		ctx.Logger().Errorf("Get ttlToLiveDuration error: %v", err)
+		return nil, err
+	}
+
 	if _, exists := input["data"]; exists {
-		ctx.Logger().Debug("Extracting messageCorrelationKey")
+		ctx.Logger().Debug("Extracting data")
 		messageData, err = coerce.ToObject(input["data"])
 		if err != nil {
 			ctx.Logger().Errorf("Get data error: %v", err)
@@ -315,15 +326,18 @@ func (a *Activity) publishMessage(ctx activity.Context, input map[string]interfa
 		}
 	}
 
-	step3 := a.zeebeClient.NewPublishMessageCommand().MessageName(messageName).CorrelationKey(messageCorrelationKey)
+	ctx.Logger().Debug("Creating request")
+	request := a.zeebeClient.NewPublishMessageCommand().MessageName(messageName).CorrelationKey(messageCorrelationKey).TimeToLive(messageTtlToLive)
 	if messageData != nil {
-		step3, err = step3.VariablesFromMap(messageData)
+		request, err = request.VariablesFromMap(messageData)
 		if err != nil {
 			ctx.Logger().Errorf("Publish Message request preparatioon error: %v", err)
 			return nil, err
 		}
 	} 
-	response, err = step3.Send(context.Background())
+
+	ctx.Logger().Debug("Sending request")
+	_, err = request.Send(context.Background())
 	if err != nil {
 		ctx.Logger().Errorf("Failed to send publish message request: %v", err)
 		return nil, err
@@ -332,10 +346,42 @@ func (a *Activity) publishMessage(ctx activity.Context, input map[string]interfa
 	result := map[string]interface{}{
 		"messageName": messageName,
 		"messageCorrelationKey": messageCorrelationKey,
-		"publishMessageResponseText": response.String(),
+		"messageTtlToLive": messageTtlToLive,
+		"publishMessageStatus": true,
 	}
+
 	ctx.Logger().Debug("Finished publishMessage func successfully")
 	return result, nil
+}
+
+func (a *Activity) resolveIncident (ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
+	var (
+		err error
+		incidentKey int64
+	)
+
+	ctx.Logger().Debug("Running resolve workflow instance func...")
+
+	ctx.Logger().Debug("Extracting incidentKey")
+	if incidentKey, err = coerce.ToInt64(input["incidentKey"]); err != nil {
+		ctx.Logger().Errorf("Get incidentKey error: %v", err)
+		return nil, err
+	}
+
+	ctx.Logger().Debug("Creating request")
+	request := a.zeebeClient.NewResolveIncidentCommand().IncidentKey(incidentKey)
+
+	ctx.Logger().Debug("Sending request")
+	if response, err := request.Send(context.Background()); err != nil {
+		ctx.Logger().Errorf("Failed to send resolve incident request: %v", err)
+		return nil, err
+	} else {
+		result := map[string]interface{}{
+			"incidentKey": incidentKey,
+			"resolveIncidentResponseText": response.String(),
+		}
+		return result, nil
+	}
 }
 
 func (a *Activity) completeJob (ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
@@ -370,13 +416,16 @@ func (a *Activity) completeJob (ctx activity.Context, input map[string]interface
 		}
 	}
 
-	ctx.Logger().Debug("Running completeJob func...") 
+	ctx.Logger().Debug("Creating request")
 
 	request, err := a.zeebeClient.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(data); 
 	if err != nil {
 		ctx.Logger().Errorf("Complete job request preparatioon error: %v", err)
 		return nil, err
 	} 
+
+	ctx.Logger().Debug("Sending request")
+
 	response, err = request.Send(context.Background())
 	if err != nil {
 		ctx.Logger().Errorf("Failed to send complete job request: %v", err)
@@ -413,16 +462,11 @@ func (a *Activity) failJob (ctx activity.Context, input map[string]interface{}) 
 		return nil, err
 	}
 
-	ctx.Logger().Debug("Extracting retries")
-	if input["retries"] != nil {
-		retries, err = coerce.ToInt32(input["retries"])
-		if err != nil {
-			ctx.Logger().Errorf("Get retries error: %v", err)
-			return nil, err
-		}
-	}
+	ctx.Logger().Debug("Creating request")
+	request := a.zeebeClient.NewFailJobCommand().JobKey(jobKey).Retries(a.activitySettings.FailJobRetries)
 
-	if response, err = a.zeebeClient.NewFailJobCommand().JobKey(jobKey).Retries(retries).Send(context.Background()); err != nil {
+	ctx.Logger().Debug("Sending request")
+	if response, err = request.Send(context.Background()); err != nil {
 		ctx.Logger().Errorf("Failed to send fail job request: %v", err)
 		return nil, err
 	} else {
@@ -434,30 +478,4 @@ func (a *Activity) failJob (ctx activity.Context, input map[string]interface{}) 
 		return result, nil
 	}
 
-}
-
-func (a *Activity) resolveIncident (ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
-	var (
-		err error
-		incidentKey int64
-	)
-
-	ctx.Logger().Debug("Running resolve workflow instance func...")
-
-	ctx.Logger().Debug("Extracting incidentKey")
-	if incidentKey, err = coerce.ToInt64(input["incidentKey"]); err != nil {
-		ctx.Logger().Errorf("Get incidentKey error: %v", err)
-		return nil, err
-	}
-
-	if response, err := a.zeebeClient.NewResolveIncidentCommand().IncidentKey(incidentKey).Send(context.Background()); err != nil {
-		ctx.Logger().Errorf("Failed to send resolve incident request: %v", err)
-		return nil, err
-	} else {
-		result := map[string]interface{}{
-			"incidentKey": incidentKey,
-			"resolveIncidentResponseText": response.String(),
-		}
-		return result, nil
-	}
 }
