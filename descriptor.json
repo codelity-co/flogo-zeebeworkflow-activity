@@ -17,11 +17,6 @@
       "required": true
     },
     {
-      "name": "bpmnProcessID",
-      "type": "string",
-      "required": true
-    },
-    {
       "name": "command",
       "type": "string",
       "required": true,
@@ -41,6 +36,11 @@
     }
   ],
   "input": [
+    {
+      "name": "bpmnProcessID",
+      "type": "string",
+      "required": false
+    },
     {
       "name": "workflowInstanceKey",
       "type": "integer",

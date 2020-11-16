@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"time"
 
-	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 
 	"github.com/project-flogo/core/activity"
 	"github.com/project-flogo/core/data/coerce"
@@ -38,9 +38,9 @@ func (tp *TokenProvider) ShouldRetryRequest(ctx context.Context, err error) bool
 // New function is factory method of activity
 func New(ctx activity.InitContext) (activity.Activity, error) {
 	var (
-		err         error
-		zeebeClient zbc.Client
-		clientConfig *zbc.ClientConfig 
+		err          error
+		zeebeClient  zbc.Client
+		clientConfig *zbc.ClientConfig
 	)
 	logger := ctx.Logger()
 
@@ -191,19 +191,18 @@ func (a *Activity) Cleanup() error {
 
 func (a *Activity) createWorkflowInstance(ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
 	var (
-		err      error
+		err           error
 		bpmnProcessID string
-		data map[string]interface{}
-		request  commands.CreateInstanceCommandStep3
+		data          map[string]interface{}
+		request       commands.CreateInstanceCommandStep3
 	)
 
 	ctx.Logger().Debug("Running createWorkflowInstance func...")
 	ctx.Logger().Debugf("input: %v", input)
 
 	ctx.Logger().Debug("Extracting bpmnProcessID")
-	bpmnProcessID = a.activitySettings.BpmnProcessID
-	if bpmnProcessID == "" {
-		err = errors.New("missing bpmnProcessID")
+	bpmnProcessID, err = coerce.ToString(input["bpmnProcessID"])
+	if err != nil {
 		ctx.Logger().Errorf("Get messageName error: %v", err)
 		return nil, err
 	}
@@ -233,10 +232,10 @@ func (a *Activity) createWorkflowInstance(ctx activity.Context, input map[string
 
 	ctx.Logger().Debug("Extracting response")
 	result := map[string]interface{}{
-		"bpmnProcessId":       response.GetBpmnProcessId(),
-		"version":             response.GetVersion(),
-		"workflowKey":         response.GetWorkflowKey(),
-		"workflowInstanceKey": response.GetWorkflowInstanceKey(),
+		"bpmnProcessID":                response.GetBpmnProcessId(),
+		"version":                      response.GetVersion(),
+		"workflowKey":                  response.GetWorkflowKey(),
+		"workflowInstanceKey":          response.GetWorkflowInstanceKey(),
 		"createWorkflowInstanceStatus": true,
 	}
 
@@ -271,7 +270,7 @@ func (a *Activity) cancelWorkflowInstance(ctx activity.Context, input map[string
 	}
 
 	result := map[string]interface{}{
-		"workflowInstanceKey": workflowInstanceKey,
+		"workflowInstanceKey":          workflowInstanceKey,
 		"cancelWorkflowInstanceStatus": true,
 	}
 
@@ -281,11 +280,11 @@ func (a *Activity) cancelWorkflowInstance(ctx activity.Context, input map[string
 
 func (a *Activity) publishMessage(ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
 	var (
-		err error
-		messageName string
+		err                   error
+		messageName           string
 		messageCorrelationKey string
-		messageTtlToLive time.Duration
-		messageData map[string]interface{}
+		messageTtlToLive      time.Duration
+		messageData           map[string]interface{}
 	)
 
 	ctx.Logger().Debug("Running publish message func...")
@@ -334,7 +333,7 @@ func (a *Activity) publishMessage(ctx activity.Context, input map[string]interfa
 			ctx.Logger().Errorf("Publish Message request preparatioon error: %v", err)
 			return nil, err
 		}
-	} 
+	}
 
 	ctx.Logger().Debug("Sending request")
 	_, err = request.Send(context.Background())
@@ -344,19 +343,19 @@ func (a *Activity) publishMessage(ctx activity.Context, input map[string]interfa
 	}
 
 	result := map[string]interface{}{
-		"messageName": messageName,
+		"messageName":           messageName,
 		"messageCorrelationKey": messageCorrelationKey,
-		"messageTtlToLive": messageTtlToLive,
-		"publishMessageStatus": true,
+		"messageTtlToLive":      messageTtlToLive,
+		"publishMessageStatus":  true,
 	}
 
 	ctx.Logger().Debug("Finished publishMessage func successfully")
 	return result, nil
 }
 
-func (a *Activity) resolveIncident (ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
+func (a *Activity) resolveIncident(ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
 	var (
-		err error
+		err         error
 		incidentKey int64
 	)
 
@@ -377,19 +376,19 @@ func (a *Activity) resolveIncident (ctx activity.Context, input map[string]inter
 		return nil, err
 	} else {
 		result := map[string]interface{}{
-			"incidentKey": incidentKey,
+			"incidentKey":                 incidentKey,
 			"resolveIncidentResponseText": response.String(),
 		}
 		return result, nil
 	}
 }
 
-func (a *Activity) completeJob (ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
+func (a *Activity) completeJob(ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
 
 	var (
-		err error
-		jobKey int64
-		data map[string]interface{}
+		err      error
+		jobKey   int64
+		data     map[string]interface{}
 		response *pb.CompleteJobResponse
 	)
 
@@ -397,7 +396,7 @@ func (a *Activity) completeJob (ctx activity.Context, input map[string]interface
 
 	ctx.Logger().Debug("Extracting jobKey")
 	if input["jobKey"] == nil {
-		err = errors.New("missing jobKey");
+		err = errors.New("missing jobKey")
 		ctx.Logger().Errorf("Get joyKey error: %v", err)
 		return nil, err
 	}
@@ -418,11 +417,11 @@ func (a *Activity) completeJob (ctx activity.Context, input map[string]interface
 
 	ctx.Logger().Debug("Creating request")
 
-	request, err := a.zeebeClient.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(data); 
+	request, err := a.zeebeClient.NewCompleteJobCommand().JobKey(jobKey).VariablesFromMap(data)
 	if err != nil {
 		ctx.Logger().Errorf("Complete job request preparatioon error: %v", err)
 		return nil, err
-	} 
+	}
 
 	ctx.Logger().Debug("Sending request")
 
@@ -433,18 +432,18 @@ func (a *Activity) completeJob (ctx activity.Context, input map[string]interface
 	}
 
 	result := map[string]interface{}{
-		"jobKey": jobKey,
+		"jobKey":                  jobKey,
 		"completeJobResponseText": response.String(),
 	}
 	return result, nil
 }
 
-func (a *Activity) failJob (ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
+func (a *Activity) failJob(ctx activity.Context, input map[string]interface{}) (map[string]interface{}, error) {
 
 	var (
-		err error
-		jobKey int64
-		retries int32
+		err      error
+		jobKey   int64
+		retries  int32
 		response *pb.FailJobResponse
 	)
 
@@ -471,8 +470,8 @@ func (a *Activity) failJob (ctx activity.Context, input map[string]interface{}) 
 		return nil, err
 	} else {
 		result := map[string]interface{}{
-			"jobKey": jobKey,
-			"retries": retries,
+			"jobKey":              jobKey,
+			"retries":             retries,
 			"failJobResponseText": response.String(),
 		}
 		return result, nil
