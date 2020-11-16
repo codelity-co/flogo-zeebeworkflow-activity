@@ -2,27 +2,25 @@ package zeebeworkflow
 
 import "github.com/project-flogo/core/data/coerce"
 
-
 // Settings struct
 type Settings struct {
-	ZeebeBrokerHost string `md:"zeebeBrokerHost,required"`
-	ZeebeBrokerPort int    `md:"zeebeBrokerPort,required"`
-	Command         string `md:"command,required"`
-	UsePlainTextConnection bool `md:"usePlainTextConnection"`
+	ZeebeBrokerHost        string `md:"zeebeBrokerHost,required"`
+	ZeebeBrokerPort        int    `md:"zeebeBrokerPort,required"`
+	Command                string `md:"command,required"`
+	UsePlainTextConnection bool   `md:"usePlainTextConnection"`
 
-	FailJobRetries  int32 `md:"failJobRetries"`
+	FailJobRetries int32 `md:"failJobRetries"`
 }
 
 // FromMap method of Settings
 func (s *Settings) FromMap(values map[string]interface{}) error {
 	var (
-		err             error
-		zeebeBrokerHost string
-		zeebeBrokerPort int
-		bpmnProcessID   string
-		command         string
+		err                    error
+		zeebeBrokerHost        string
+		zeebeBrokerPort        int
+		command                string
 		usePlainTextConnection bool
-		failJobRetries int32
+		failJobRetries         int32
 	)
 
 	zeebeBrokerHost, err = coerce.ToString(values["zeebeBrokerHost"])
@@ -61,38 +59,38 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 // ToMap method of Settings
 func (s *Settings) ToMap() map[string]interface{} {
 	return map[string]interface{}{
-		"zeebeBrokerHost": s.ZeebeBrokerHost,
-		"zeebeBrokerPort": s.ZeebeBrokerPort,
-		"command":         s.Command,
+		"zeebeBrokerHost":        s.ZeebeBrokerHost,
+		"zeebeBrokerPort":        s.ZeebeBrokerPort,
+		"command":                s.Command,
 		"usePlainTextConnection": s.UsePlainTextConnection,
-		"failJobRetries": s.FailJobRetries,
+		"failJobRetries":         s.FailJobRetries,
 	}
 }
 
 // Input struct
 type Input struct {
-	BpmnProcessID   string `md:"bpmnProcessID,required"`
-	WorkflowInstanceKey int64 `md:"workflowInstanceKey"`
-	MessageName string `md:"messageName"`
-	MessageCorrelationKey string `md:"messageCorrelationKey"`
-	MessageTtlToLive string `md:"messageTtlToLive"`
-	IncidentKey int64 `md:"incidentKey"`
-	JobKey int64 `md:"jobKey"`
-	Data map[string]interface{} `md:"data"`
+	BpmnProcessID         string                 `md:"bpmnProcessID,required"`
+	WorkflowInstanceKey   int64                  `md:"workflowInstanceKey"`
+	MessageName           string                 `md:"messageName"`
+	MessageCorrelationKey string                 `md:"messageCorrelationKey"`
+	MessageTtlToLive      string                 `md:"messageTtlToLive"`
+	IncidentKey           int64                  `md:"incidentKey"`
+	JobKey                int64                  `md:"jobKey"`
+	Data                  map[string]interface{} `md:"data"`
 }
 
 // FromMap method of Input
 func (i *Input) FromMap(values map[string]interface{}) error {
 	var (
-		err   error
-		bpmnProcessID string
-		workflowInstanceKey int64
-		messageName string
+		err                   error
+		bpmnProcessID         string
+		workflowInstanceKey   int64
+		messageName           string
 		messageCorrelationKey string
-		messageTtlToLive string
-		incidentKey int64
-		jobKey int64
-		data map[string]interface{}
+		messageTtlToLive      string
+		incidentKey           int64
+		jobKey                int64
+		data                  map[string]interface{}
 	)
 
 	bpmnProcessID, err = coerce.ToString(values["bpmnProcessID"])
@@ -191,12 +189,12 @@ func (i *Input) ToMap() map[string]interface{} {
 	if i.Data != nil {
 		result["data"] = i.Data
 	}
-	return result 
+	return result
 }
 
 // Output struct
 type Output struct {
-	Status string `md:"status,required"`
+	Status string      `md:"status,required"`
 	Result interface{} `md:"result,required"`
 }
 
