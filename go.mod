@@ -1,6 +1,6 @@
 module github.com/codelity-co/flogo-zeebeworkflow-activity
 
-go 1.14
+go 1.13
 
 require (
 	github.com/docker/docker v17.12.0-ce-rc1.0.20200916142827-bd33bbf0497b+incompatible

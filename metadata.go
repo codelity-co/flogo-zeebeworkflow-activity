@@ -7,7 +7,6 @@ import "github.com/project-flogo/core/data/coerce"
 type Settings struct {
 	ZeebeBrokerHost string `md:"zeebeBrokerHost,required"`
 	ZeebeBrokerPort int    `md:"zeebeBrokerPort,required"`
-	BpmnProcessID   string `md:"bpmnProcessID,required"`
 	Command         string `md:"command,required"`
 	UsePlainTextConnection bool `md:"usePlainTextConnection"`
 
@@ -38,12 +37,6 @@ func (s *Settings) FromMap(values map[string]interface{}) error {
 	}
 	s.ZeebeBrokerPort = zeebeBrokerPort
 
-	bpmnProcessID, err = coerce.ToString(values["bpmnProcessID"])
-	if err != nil {
-		return err
-	}
-	s.BpmnProcessID = bpmnProcessID
-
 	command, err = coerce.ToString(values["command"])
 	if err != nil {
 		return err
@@ -70,7 +63,6 @@ func (s *Settings) ToMap() map[string]interface{} {
 	return map[string]interface{}{
 		"zeebeBrokerHost": s.ZeebeBrokerHost,
 		"zeebeBrokerPort": s.ZeebeBrokerPort,
-		"bpmnProcessID":   s.BpmnProcessID,
 		"command":         s.Command,
 		"usePlainTextConnection": s.UsePlainTextConnection,
 		"failJobRetries": s.FailJobRetries,
@@ -79,6 +71,7 @@ func (s *Settings) ToMap() map[string]interface{} {
 
 // Input struct
 type Input struct {
+	BpmnProcessID   string `md:"bpmnProcessID,required"`
 	WorkflowInstanceKey int64 `md:"workflowInstanceKey"`
 	MessageName string `md:"messageName"`
 	MessageCorrelationKey string `md:"messageCorrelationKey"`
@@ -92,6 +85,7 @@ type Input struct {
 func (i *Input) FromMap(values map[string]interface{}) error {
 	var (
 		err   error
+		bpmnProcessID string
 		workflowInstanceKey int64
 		messageName string
 		messageCorrelationKey string
@@ -100,6 +94,11 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 		jobKey int64
 		data map[string]interface{}
 	)
+
+	bpmnProcessID, err = coerce.ToString(values["bpmnProcessID"])
+	if err != nil {
+		return err
+	}
 
 	workflowInstanceKey, err = coerce.ToInt64(values["workflowInstanceKey"])
 	if err != nil {
@@ -136,6 +135,10 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
+	if bpmnProcessID != "" {
+		i.BpmnProcessID = bpmnProcessID
+	}
+
 	if workflowInstanceKey > 0 {
 		i.WorkflowInstanceKey = workflowInstanceKey
 	}
@@ -164,6 +167,9 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 // ToMap method of Input
 func (i *Input) ToMap() map[string]interface{} {
 	result := make(map[string]interface{})
+	if i.BpmnProcessID != "" {
+		result["bpmnProcessID"] = i.BpmnProcessID
+	}
 	if i.WorkflowInstanceKey > 0 {
 		result["workflowInstanceKey"] = i.WorkflowInstanceKey
 	}

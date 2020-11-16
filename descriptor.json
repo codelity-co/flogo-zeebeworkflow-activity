@@ -1,7 +1,7 @@
 {
   "name": "flogo-zeebeworkflow-activity",
   "type": "flogo:activity",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "title": "Codelity Flogo Zeebe Workflow Activity",
   "description": "Codelity Flogo Zeebe Workflow Activity",
   "homepage": "https://github.com/codelity-co/flogo-zeebeworkflow-activity",
@@ -14,11 +14,6 @@
     {
       "name": "zeebeBrokerPort",
       "type": "integer",
-      "required": true
-    },
-    {
-      "name": "bpmnProcessID",
-      "type": "string",
       "required": true
     },
     {
@@ -41,6 +36,11 @@
     }
   ],
   "input": [
+    {
+      "name": "bpmnProcessID",
+      "type": "string",
+      "required": false
+    },
     {
       "name": "workflowInstanceKey",
       "type": "integer",
