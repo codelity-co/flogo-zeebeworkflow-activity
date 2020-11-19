@@ -17,10 +17,8 @@ import (
 )
 
 func init() {
-	_ = activity.Register(&Activity{}) //activity.Register(&Activity{}, New) to create instances using factory method 'New'
+	_ = activity.Register(&Activity{}, New)
 }
-
-var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})
 
 type TokenProvider struct {
 	token string
@@ -34,6 +32,8 @@ func (tp *TokenProvider) ApplyCredentials(ctx context.Context, headers map[strin
 func (tp *TokenProvider) ShouldRetryRequest(ctx context.Context, err error) bool {
 	return status.Code(err) == codes.DeadlineExceeded
 }
+
+var activityMd = activity.ToMetadata(&Settings{}, &Input{}, &Output{})
 
 // New function is factory method of activity
 func New(ctx activity.InitContext) (activity.Activity, error) {
