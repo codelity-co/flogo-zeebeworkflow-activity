@@ -42,16 +42,17 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 		zeebeClient  zbc.Client
 		clientConfig *zbc.ClientConfig
 	)
+
 	logger := ctx.Logger()
 
 	// Activity settings
 	s := &Settings{}
-	logger.Debugf("ctx.Settings(): %v", ctx.Settings())
+	logger.Infof("ctx.Settings(): %v", ctx.Settings())
 	err = s.FromMap(ctx.Settings())
 	if err != nil {
 		return nil, err
 	}
-	logger.Debugf("Settings: %v", s)
+	logger.Infof("Settings: %v", s)
 
 	// Connect to Zeebe broker
 	clientConfig = &zbc.ClientConfig{
