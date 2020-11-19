@@ -46,6 +46,7 @@ func New(ctx activity.InitContext) (activity.Activity, error) {
 
 	// Activity settings
 	s := &Settings{}
+	logger.Debugf("ctx.Settings(): %v", ctx.Settings())
 	err = s.FromMap(ctx.Settings())
 	if err != nil {
 		return nil, err
