@@ -94,6 +94,8 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 
 	logger := ctx.Logger()
 
+	logger.Debugf("Activity Settings: %v", a.activitySettings)
+
 	input := &Input{}
 	err = ctx.GetInputObject(input)
 	if err != nil {
@@ -104,6 +106,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 	output := &Output{}
 	result := make(map[string]interface{})
 
+	logger.Debugf("Command: %v", a.activitySettings.Command)
 	switch a.activitySettings.Command {
 	case "CreateWorkflowInstance":
 		result["createWorkflowInstanceResponse"], err = a.createWorkflowInstance(ctx, input.Data)
