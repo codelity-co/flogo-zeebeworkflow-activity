@@ -69,7 +69,7 @@ func (s *Settings) ToMap() map[string]interface{} {
 
 // Input struct
 type Input struct {
-	BpmnProcessID         string                 `md:"bpmnProcessID,required"`
+	BpmnProcessID         string                 `md:"bpmnProcessID"`
 	WorkflowInstanceKey   int64                  `md:"workflowInstanceKey"`
 	MessageName           string                 `md:"messageName"`
 	MessageCorrelationKey string                 `md:"messageCorrelationKey"`
