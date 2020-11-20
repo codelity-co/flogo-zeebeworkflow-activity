@@ -96,7 +96,7 @@ func (a *Activity) Eval(ctx activity.Context) (bool, error) {
 
 	logger.Debugf("Activity Settings: %v", a.activitySettings)
 
-	input := &Input{}
+	input := &Input{Logger: logger}
 	err = ctx.GetInputObject(input)
 	if err != nil {
 		return true, err
