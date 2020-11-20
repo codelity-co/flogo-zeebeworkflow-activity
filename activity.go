@@ -2,7 +2,6 @@ package zeebeworkflow
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"time"
 
@@ -10,7 +9,6 @@ import (
 	"google.golang.org/grpc/status"
 
 	"github.com/project-flogo/core/activity"
-	"github.com/project-flogo/core/data/coerce"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/commands"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/pb"
 	"github.com/zeebe-io/zeebe/clients/go/pkg/zbc"
@@ -264,7 +262,6 @@ func (a *Activity) publishMessage(ctx activity.Context, messageName string, mess
 	var (
 		err              error
 		messageTtlToLive time.Duration
-		messageData      map[string]interface{}
 	)
 
 	ctx.Logger().Debug("Running publish message func...")
@@ -310,9 +307,6 @@ func (a *Activity) publishMessage(ctx activity.Context, messageName string, mess
 }
 
 func (a *Activity) resolveIncident(ctx activity.Context, incidentKey int64) (map[string]interface{}, error) {
-	var (
-		err error
-	)
 
 	ctx.Logger().Debug("Running resolve workflow instance func...")
 	ctx.Logger().Debugf("incidentKey: %v", incidentKey)
@@ -371,7 +365,6 @@ func (a *Activity) failJob(ctx activity.Context, jobKey int64) (map[string]inter
 
 	var (
 		err      error
-		jobKey   int64
 		retries  int32
 		response *pb.FailJobResponse
 	)
