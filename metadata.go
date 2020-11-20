@@ -1,6 +1,9 @@
 package zeebeworkflow
 
-import "github.com/project-flogo/core/data/coerce"
+import (
+	"github.com/project-flogo/core/data/coerce"
+	"github.com/project-flogo/core/support/log"
+)
 
 // Settings struct
 type Settings struct {
@@ -69,29 +72,32 @@ func (s *Settings) ToMap() map[string]interface{} {
 
 // Input struct
 type Input struct {
-	BpmnProcessID         string                 `md:"bpmnProcessID"`
-	WorkflowInstanceKey   int64                  `md:"workflowInstanceKey"`
-	MessageName           string                 `md:"messageName"`
-	MessageCorrelationKey string                 `md:"messageCorrelationKey"`
-	MessageTtlToLiveString string                `md:"messageTtlToLiveString"`
-	IncidentKey           int64                  `md:"incidentKey"`
-	JobKey                int64                  `md:"jobKey"`
-	Data                  map[string]interface{} `md:"data"`
+	Logger                 log.Logger
+	BpmnProcessID          string                 `md:"bpmnProcessID"`
+	WorkflowInstanceKey    int64                  `md:"workflowInstanceKey"`
+	MessageName            string                 `md:"messageName"`
+	MessageCorrelationKey  string                 `md:"messageCorrelationKey"`
+	MessageTtlToLiveString string                 `md:"messageTtlToLiveString"`
+	IncidentKey            int64                  `md:"incidentKey"`
+	JobKey                 int64                  `md:"jobKey"`
+	Data                   map[string]interface{} `md:"data"`
 }
 
 // FromMap method of Input
 func (i *Input) FromMap(values map[string]interface{}) error {
 	var (
-		err                   error
-		bpmnProcessID         string
-		workflowInstanceKey   int64
-		messageName           string
-		messageCorrelationKey string
-		messageTtlToLiveString      string
-		incidentKey           int64
-		jobKey                int64
-		data                  map[string]interface{}
+		err                    error
+		bpmnProcessID          string
+		workflowInstanceKey    int64
+		messageName            string
+		messageCorrelationKey  string
+		messageTtlToLiveString string
+		incidentKey            int64
+		jobKey                 int64
+		data                   map[string]interface{}
 	)
+
+	i.Logger.Debugf("values: %v", values)
 
 	bpmnProcessID, err = coerce.ToString(values["bpmnProcessID"])
 	if err != nil {
