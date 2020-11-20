@@ -57,7 +57,7 @@
       "required": false
     },
     {
-      "name": "messageTtlToLive",
+      "name": "messageTtlToLiveString",
       "type": "string",
       "required": false
     },

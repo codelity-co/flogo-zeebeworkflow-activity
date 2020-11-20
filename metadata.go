@@ -73,7 +73,7 @@ type Input struct {
 	WorkflowInstanceKey   int64                  `md:"workflowInstanceKey"`
 	MessageName           string                 `md:"messageName"`
 	MessageCorrelationKey string                 `md:"messageCorrelationKey"`
-	MessageTtlToLive      string                 `md:"messageTtlToLive"`
+	MessageTtlToLiveString string                `md:"messageTtlToLiveString"`
 	IncidentKey           int64                  `md:"incidentKey"`
 	JobKey                int64                  `md:"jobKey"`
 	Data                  map[string]interface{} `md:"data"`
@@ -87,7 +87,7 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 		workflowInstanceKey   int64
 		messageName           string
 		messageCorrelationKey string
-		messageTtlToLive      string
+		messageTtlToLiveString      string
 		incidentKey           int64
 		jobKey                int64
 		data                  map[string]interface{}
@@ -113,7 +113,7 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 		return err
 	}
 
-	messageTtlToLive, err = coerce.ToString(values["messageTtlToLive"])
+	messageTtlToLiveString, err = coerce.ToString(values["messageTtlToLiveString"])
 	if err != nil {
 		return err
 	}
@@ -146,8 +146,8 @@ func (i *Input) FromMap(values map[string]interface{}) error {
 	if messageCorrelationKey != "" {
 		i.MessageCorrelationKey = messageCorrelationKey
 	}
-	if messageTtlToLive != "" {
-		i.MessageTtlToLive = messageTtlToLive
+	if messageTtlToLiveString != "" {
+		i.MessageTtlToLiveString = messageTtlToLiveString
 	}
 	if incidentKey > 0 {
 		i.IncidentKey = incidentKey
@@ -177,8 +177,8 @@ func (i *Input) ToMap() map[string]interface{} {
 	if i.MessageCorrelationKey != "" {
 		result["messageCorrelationKey"] = i.MessageCorrelationKey
 	}
-	if i.MessageTtlToLive != "" {
-		result["messageTtlToLive"] = i.MessageTtlToLive
+	if i.MessageTtlToLiveString != "" {
+		result["messageTtlToLiveString"] = i.MessageTtlToLiveString
 	}
 	if i.IncidentKey > 0 {
 		result["incidentKey"] = i.IncidentKey
